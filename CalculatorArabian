@@ -1,0 +1,82 @@
+
+
+import java.util.Scanner;
+
+public class CalculatorArabian {
+    public static void main(String[] args) throws Exception {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Input: ");
+        String input = scanner.nextLine();
+        String[] parts = input.split(" ");
+
+
+        int a, b, result = 0;
+        try {
+        if (isLatinNumber(parts[0]) && isLatinNumber(parts[2])) {
+
+
+            a = LatinNumbers.valueOf(parts[0]).getNumbers();
+            b = LatinNumbers.valueOf(parts[2]).getNumbers();
+
+
+        }
+        else {
+            a = Integer.parseInt(parts[0]);
+            b = Integer.parseInt(parts[2]);
+        }
+        }catch (NumberFormatException e) {
+            System.out.println("т.к. используются одновременно разные системы счисления");
+            return;
+        }
+
+
+        switch (parts[1]){
+            case "+":
+                result = a+b;
+                break;
+            case "*":
+                result = a*b;
+                break;
+            case "-":
+                result = a-b;
+                break;
+            case "/":
+                result = a/b;
+                break;
+            default:
+                System.out.println("Неправильный оператор");
+                return;
+        }
+
+
+        if (isLatinNumber(parts[0]) && isLatinNumber(parts[2])) {
+
+            for (LatinNumbers ln : LatinNumbers.values()) {
+                if (result == ln.getNumbers())
+                {
+                    System.out.println("Output: " + ln.name());
+                    return;
+                }
+            }
+        } else {
+            System.out.println("Output: " + result);
+        }
+    }
+
+
+    private static boolean isLatinNumber(String part) {
+        String romanPattern = "(I|II|III|IV|V|VI|VII|VIII|IX|X)";
+        return part.matches(romanPattern);
+    }
+    }
+
+
+
+
+
+
+
+
+
+
+
