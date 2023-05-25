@@ -1,73 +1,10 @@
 
-import java.util.Scanner;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) throws Exception {
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Input: ");
-        String input = scanner.nextLine();
-        String[] parts = input.split(" ");
-
-        if (parts.length != 3) {
-            throw new Exception("Недопустимое количество операндов. Допускается использование только двух операндов.");
-        }
-
-        int a, b, result = 0;
-        boolean isLatinNumber = isLatinNumber(parts[0]);
-
-        if (isLatinNumber(parts[2]) != isLatinNumber) {
-            throw new Exception("т.к. используются одновременно разные системы счисления");
-        }
-
-        if (isLatinNumber(parts[0]) && isLatinNumber(parts[2])) {
-            a = RomanNumeralConverter.convertToArabic(parts[0]);
-            b = RomanNumeralConverter.convertToArabic(parts[2]);
-        } else {
-            a = Integer.parseInt(parts[0]);
-            b = Integer.parseInt(parts[2]);
-        }
-
-        switch (parts[1]) {
-            case "+":
-                result = a + b;
-                break;
-            case "*":
-                result = a * b;
-                break;
-            case "-":
-                result = a - b;
-                break;
-            case "/":
-                result = a / b;
-                break;
-            default:
-                throw new Exception("т.к. формат математической операции не удовлетворяет заданию - оператор (+, -, /, *)");
-        }
-
-        if (isLatinNumber(parts[0]) && isLatinNumber(parts[2])) {
-            if (result <= 0) {
-                throw new Exception("т.к. в римской системе числа должны быть положительными");
-            }
-
-            System.out.println("Output: " + RomanNumeralConverter.convertToRoman(result));
-        } else {
-
-
-            System.out.println("Output: " + result);
-        }
-    }
-
-    private static boolean isLatinNumber(String part) {
-        String romanPattern = "(I|II|III|IV|V|VI|VII|VIII|IX|X)";
-        return part.matches(romanPattern);
-    }
-}
-
-class RomanNumeralConverter {
     private static final Map<Character, Integer> romanToArabicMap = new HashMap<>();
-    private static final Map<Integer, String> arabicToRomanMap = new HashMap<>();
 
     static {
         romanToArabicMap.put('I', 1);
@@ -77,32 +14,97 @@ class RomanNumeralConverter {
         romanToArabicMap.put('C', 100);
         romanToArabicMap.put('D', 500);
         romanToArabicMap.put('M', 1000);
-
-        arabicToRomanMap.put(1, "I");
-        arabicToRomanMap.put(4, "IV");
-        arabicToRomanMap.put(5, "V");
-        arabicToRomanMap.put(9, "IX");
-        arabicToRomanMap.put(10, "X");
-        arabicToRomanMap.put(40, "XL");
-        arabicToRomanMap.put(50, "L");
-        arabicToRomanMap.put(90, "XC");
-        arabicToRomanMap.put(100, "C");
-        arabicToRomanMap.put(400, "CD");
-        arabicToRomanMap.put(500, "D");
-        arabicToRomanMap.put(900, "CM");
-        arabicToRomanMap.put(1000, "M");
     }
 
-    public static int convertToArabic(String romanNumeral) {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Input: ");
+        String input = scanner.nextLine();
+
+        try {
+            String output = calc(input);
+            System.out.println("Output: " + output);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public static String calc(String input) throws Exception {
+        String[] parts = input.split(" ");
+
+        if (parts.length != 3) {
+            throw new Exception("Недопустимое количество операндов. Допускается использование только двух операндов.");
+        }
+
+        String firstOperand = parts[0];
+        String operator = parts[1];
+        String secondOperand = parts[2];
+
+        boolean isRomanNumeral = isRomanNumber(firstOperand) && isRomanNumber(secondOperand);
+        boolean isArabicNumeral = isArabicNumber(firstOperand) && isArabicNumber(secondOperand);
+
+        if (!isRomanNumeral && !isArabicNumeral) {
+            throw new Exception("Только одна система счисления должна быть использована (римская или арабская).");
+        }
+
+        int a, b;
+
+        if (isRomanNumeral) {
+            a = convertRomanToArabic(firstOperand);
+            b = convertRomanToArabic(secondOperand);
+            if (a < 1 || b < 1 || b > 10)
+                throw new Exception("Числа должны быть в диапазоне от 1 до 10.");
+        } else {
+            a = Integer.parseInt(firstOperand);
+            b = Integer.parseInt(secondOperand);
+
+            if (a < 1 || b < 1 || b > 10)
+            throw new Exception("Числа должны быть в диапазоне от 1 до 10.");
+        }
+
+        int result;
+        switch (operator) {
+            case "+":
+                result = a + b;
+                break;
+            case "-":
+                result = a - b;
+                break;
+            case "*":
+                result = a * b;
+                break;
+            case "/":
+                result = a / b;
+                break;
+            default:
+
+                throw new Exception("Недопустимый оператор. Допускаются только операторы +, -, *, /.");
+        }
+
+        if (isRomanNumeral) {
+            if (result <= 0) {
+                throw new Exception("В римской системе числа должны быть положительными.");
+            }
+            return convertArabicToRoman(result);
+        } else {
+            return String.valueOf(result);
+        }
+    }
+
+    private static boolean isRomanNumber(String input) {
+        return input.matches("[IVXLCDM]+");
+    }
+
+    private static boolean isArabicNumber(String input) {
+        return input.matches("\\d+");
+    }
+
+    private static int convertRomanToArabic(String romanNumeral)  {
         int result = 0;
         int prevValue = 0;
 
         for (int i = romanNumeral.length() - 1; i >= 0; i--) {
             char c = romanNumeral.charAt(i);
-
-            if (!romanToArabicMap.containsKey(c)) {
-                throw new IllegalArgumentException("Неверный символ в римском числе: " + c);
-            }
 
             int currentValue = romanToArabicMap.get(c);
 
@@ -117,37 +119,19 @@ class RomanNumeralConverter {
         return result;
     }
 
-    public static String convertToRoman(int arabicNumeral) {
-
-
+    private static String convertArabicToRoman(int number) {
         StringBuilder romanNumeral = new StringBuilder();
+        int[] arabicValues = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+        String[] romanSymbols = {"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
 
-        while (arabicNumeral > 0) {
-            int closestValue = findClosestValue(arabicNumeral);
-
-            if (closestValue == arabicNumeral) {
-                romanNumeral.append(arabicToRomanMap.get(closestValue));
-                arabicNumeral -= closestValue;
-            } else {
-                romanNumeral.append(arabicToRomanMap.get(closestValue));
-                arabicNumeral -= closestValue;
+        for (int i = 0; i < arabicValues.length; i++) {
+            while (number >= arabicValues[i]) {
+                romanNumeral.append(romanSymbols[i]);
+                number -= arabicValues[i];
             }
         }
 
         return romanNumeral.toString();
     }
-
-    private static int findClosestValue(int arabicNumeral) {
-        int closestValue = 1;
-
-        for (int value : arabicToRomanMap.keySet()) {
-            if (value <= arabicNumeral) {
-                closestValue = value;
-            } else {
-                break;
-            }
-        }
-
-        return closestValue;
-    }
 }
+
